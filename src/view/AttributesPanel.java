@@ -2,11 +2,15 @@ package view;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
 import javax.swing.border.Border;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -17,6 +21,10 @@ public class AttributesPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
+	private FocusChangeHandler focusChangeHandler;
+	
+	private int panelWidth;
+	private int panelHeight;
 	private Font unifiedFont;
 	private Border unifiedBorder;
 	private JLabel attrNameLabel;
@@ -30,6 +38,12 @@ public class AttributesPanel extends JPanel {
 	private int attrNumber;
 	
 	public AttributesPanel() {
+		focusChangeHandler = new FocusChangeHandler();
+		
+		panelWidth = 630;
+		panelHeight = 66;
+		setPreferredSize( new Dimension( panelWidth, panelHeight ) );
+		
 		setLayout( null );
 		
 		unifiedFont = new Font( "細明體", Font.PLAIN, 16 );
@@ -57,18 +71,21 @@ public class AttributesPanel extends JPanel {
 		attrNameTextFields.add( new JTextField() );
 		attrNameTextFields.get(0).setFont( unifiedFont );
 		attrNameTextFields.get(0).setBounds( 0, 22, 161, 22 );
+		attrNameTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( attrNameTextFields.get(0) );
 		
 		typeTextFields = new ArrayList<JTextField>();
 		typeTextFields.add( new JTextField() );
 		typeTextFields.get(0).setFont( unifiedFont );
 		typeTextFields.get(0).setBounds( 161, 22, 80, 22 );
+		typeTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( typeTextFields.get(0) );
 		
 		descriptionTextFields = new ArrayList<JTextField>();
 		descriptionTextFields.add( new JTextField() );
 		descriptionTextFields.get(0).setFont( unifiedFont );
 		descriptionTextFields.get(0).setBounds( 241, 22, 305, 22 );
+		descriptionTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( descriptionTextFields.get(0) );
 		
 		removeButtons = new ArrayList<RemoveButton>();
@@ -78,6 +95,7 @@ public class AttributesPanel extends JPanel {
 		removeButtons.get(0).setBounds( 546, 22, 65, 22 );
 		removeButtons.get(0).setEnabled( false );
 		removeButtons.get(0).addActionListener( new RemoveButtonHandler( this ) );
+		removeButtons.get(0).addFocusListener( focusChangeHandler );
 		add( removeButtons.get(0) );
 		
 		addButton = new JButton( "Add" );
@@ -86,6 +104,7 @@ public class AttributesPanel extends JPanel {
 		addButton.setBounds( 0, 44, 50, 22 );
 		addButton.setMnemonic( 'A' );
 		addButton.addActionListener( new AddButtonHandler( this ) );
+		addButton.addFocusListener( focusChangeHandler );
 		add( addButton );
 		
 		attrNumber = 1;
@@ -141,16 +160,19 @@ public class AttributesPanel extends JPanel {
 			newAttrNameTextField = new JTextField();
 			newAttrNameTextField.setFont( unifiedFont );
 			newAttrNameTextField.setBounds( 0, 22*(attrNumber+1), 161, 22 );
+			newAttrNameTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newAttrNameTextField );
 			
 			newTypeTextField = new JTextField();
 			newTypeTextField.setFont( unifiedFont );
 			newTypeTextField.setBounds( 161, 22*(attrNumber+1), 80, 22 );
+			newTypeTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newTypeTextField );
 			
 			newDescriptionTextField = new JTextField();
 			newDescriptionTextField.setFont( unifiedFont );
 			newDescriptionTextField.setBounds( 241, 22*(attrNumber+1), 305, 22 );
+			newDescriptionTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newDescriptionTextField );
 			
 			newRemoveButton = new RemoveButton( attrNumber );
@@ -159,6 +181,7 @@ public class AttributesPanel extends JPanel {
 			newRemoveButton.setBounds( 546, 22*(attrNumber+1), 65, 22 );
 			newRemoveButton.addActionListener( 
 				new RemoveButtonHandler( attributesPanel ) );
+			newRemoveButton.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newRemoveButton );
 			
 			addButton.setBounds( 0, 22*(attrNumber+2), 50, 22 );
@@ -172,8 +195,12 @@ public class AttributesPanel extends JPanel {
 				removeButtons.get(0).setEnabled( true );
 			}
 			attrNumber++;
+			panelHeight = (attrNumber + 2) * 22;
+			setPreferredSize( new Dimension( panelWidth, panelHeight ) );
+			scrollRectToVisible( addButton.getBounds() );
 			
 			repaint();
+			revalidate();
 		}
 	}
 	
@@ -213,8 +240,22 @@ public class AttributesPanel extends JPanel {
 			if( attrNumber == 1 ) {
 				removeButtons.get(0).setEnabled( false );
 			}
+			panelHeight = (attrNumber + 2) * 22;
+			setPreferredSize( new Dimension( panelWidth, panelHeight ) );
 			
 			repaint();
+			revalidate();
+		}
+	}
+	
+	private class FocusChangeHandler implements FocusListener {
+		
+		public void focusGained( FocusEvent e ) {
+			scrollRectToVisible( ((JComponent)e.getSource()).getBounds() );
+		}
+		
+		public void focusLost( FocusEvent e ) {
+			
 		}
 	}
 }
