@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import domain.Attribute;
 import domain.Bean;
+import utils.StringUtils;
 
 public class BeanExportService {
 	
@@ -26,15 +27,22 @@ public class BeanExportService {
 			Bean bean, ArrayList<Attribute> attributes ) {
 		ArrayList<String> exportContent = new ArrayList<String>();
 		
-		exportContent.add( String.format( "package %s;", bean.getPackageName()) );
-		exportContent.add( "" );
+		if( StringUtils.isNotBlank( bean.getPackageName() ) ) {
+			exportContent.add( String.format( "package %s;", bean.getPackageName()) );
+			exportContent.add( "" );
+		}
 		exportContent.add( String.format( "public class %s {", bean.getBeanName() ) );
 		exportContent.add( "" );
 		
 		for( Attribute attr : attributes ) {
-			exportContent.add( String.format( 
-				"    private %s %s;  // %s",
-				attr.getType(), attr.getAttrName(), attr.getDescription() ) );
+			StringBuffer attrDefineString = new StringBuffer();
+			attrDefineString.append( String.format( 
+				"    private %s %s;", attr.getType(), attr.getAttrName() ) );
+			if( StringUtils.isNotBlank( attr.getDescription() ) ) {
+				attrDefineString.append( String.format(
+					"  // %s", attr.getDescription() ) );
+			}
+			exportContent.add( attrDefineString.toString() );
 		}
 		
 		for( Attribute attr : attributes ) {
