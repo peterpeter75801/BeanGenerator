@@ -4,32 +4,37 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
-import javax.swing.border.Border;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import domain.Attribute;
+import utils.StringUtils;
 
 public class AttributesPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	
+	private MainPanal mainPanel;
+	
+	private RemoveButtonHandler removeButtonHandler;
 	private FocusChangeHandler focusChangeHandler;
+	private MnemonicKeyHandler mnemonicKeyHandler;
 	
 	private int panelWidth;
 	private int panelHeight;
+	private Color defaultTextFieldsColor;
+	private Color errorTextFieldsColor;
 	private Font unifiedFont;
-	private Border unifiedBorder;
-	private JLabel attrNameLabel;
-	private JLabel typeLabel;
-	private JLabel descriptionLabel;
 	private ArrayList<JTextField> attrNameTextFields;
 	private ArrayList<JTextField> typeTextFields;
 	private ArrayList<JTextField> descriptionTextFields;
@@ -37,54 +42,41 @@ public class AttributesPanel extends JPanel {
 	private JButton addButton;
 	private int attrNumber;
 	
-	public AttributesPanel() {
-		focusChangeHandler = new FocusChangeHandler();
+	public AttributesPanel( MainPanal mainPanalRef ) {
+		mainPanel = mainPanalRef;
 		
-		panelWidth = 630;
-		panelHeight = 66;
+		removeButtonHandler = new RemoveButtonHandler( this );
+		focusChangeHandler = new FocusChangeHandler();
+		mnemonicKeyHandler = new MnemonicKeyHandler();
+		
+		panelWidth = 590;
+		panelHeight = 44;
 		setPreferredSize( new Dimension( panelWidth, panelHeight ) );
 		
 		setLayout( null );
 		
+		defaultTextFieldsColor = new JTextField().getBackground();
+		errorTextFieldsColor = new Color( 255, 187, 187 );
 		unifiedFont = new Font( "細明體", Font.PLAIN, 16 );
-		unifiedBorder = new JTextField().getBorder();
-		
-		attrNameLabel = new JLabel( "Name" );
-		attrNameLabel.setFont( unifiedFont );
-		attrNameLabel.setBounds( 0, 0, 161, 22 );
-		attrNameLabel.setBorder( unifiedBorder );
-		add( attrNameLabel );
-		
-		typeLabel = new JLabel( "Type" );
-		typeLabel.setFont( unifiedFont );
-		typeLabel.setBounds( 161, 0, 80, 22 );
-		typeLabel.setBorder( unifiedBorder );
-		add( typeLabel );
-		
-		descriptionLabel = new JLabel( "Description" );
-		descriptionLabel.setFont( unifiedFont );
-		descriptionLabel.setBounds( 241, 0, 305, 22 );
-		descriptionLabel.setBorder( unifiedBorder );
-		add( descriptionLabel );
 		
 		attrNameTextFields = new ArrayList<JTextField>();
 		attrNameTextFields.add( new JTextField() );
 		attrNameTextFields.get(0).setFont( unifiedFont );
-		attrNameTextFields.get(0).setBounds( 0, 22, 161, 22 );
+		attrNameTextFields.get(0).setBounds( 0, 0, 161, 22 );
 		attrNameTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( attrNameTextFields.get(0) );
 		
 		typeTextFields = new ArrayList<JTextField>();
 		typeTextFields.add( new JTextField() );
 		typeTextFields.get(0).setFont( unifiedFont );
-		typeTextFields.get(0).setBounds( 161, 22, 80, 22 );
+		typeTextFields.get(0).setBounds( 161, 0, 80, 22 );
 		typeTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( typeTextFields.get(0) );
 		
 		descriptionTextFields = new ArrayList<JTextField>();
 		descriptionTextFields.add( new JTextField() );
 		descriptionTextFields.get(0).setFont( unifiedFont );
-		descriptionTextFields.get(0).setBounds( 241, 22, 305, 22 );
+		descriptionTextFields.get(0).setBounds( 241, 0, 305, 22 );
 		descriptionTextFields.get(0).addFocusListener( focusChangeHandler );
 		add( descriptionTextFields.get(0) );
 		
@@ -92,22 +84,73 @@ public class AttributesPanel extends JPanel {
 		removeButtons.add( new RemoveButton( 0 ) );
 		removeButtons.get(0).setFont( unifiedFont );
 		removeButtons.get(0).setMargin( new Insets( 0, 0, 0, 0 ) );
-		removeButtons.get(0).setBounds( 546, 22, 65, 22 );
+		removeButtons.get(0).setBounds( 546, 0, 65, 22 );
 		removeButtons.get(0).setEnabled( false );
-		removeButtons.get(0).addActionListener( new RemoveButtonHandler( this ) );
+		removeButtons.get(0).addActionListener( removeButtonHandler );
 		removeButtons.get(0).addFocusListener( focusChangeHandler );
+		removeButtons.get(0).addKeyListener( mnemonicKeyHandler );
 		add( removeButtons.get(0) );
 		
 		addButton = new JButton( "Add" );
 		addButton.setFont( unifiedFont );
 		addButton.setMargin( new Insets( 0, 0, 0, 0 ) );
-		addButton.setBounds( 0, 44, 50, 22 );
-		addButton.setMnemonic( 'A' );
+		addButton.setBounds( 0, 22, 50, 22 );
+		addButton.setMnemonic( KeyEvent.VK_A );
 		addButton.addActionListener( new AddButtonHandler( this ) );
 		addButton.addFocusListener( focusChangeHandler );
+		addButton.addKeyListener( mnemonicKeyHandler );
 		add( addButton );
 		
 		attrNumber = 1;
+	}
+	
+	public boolean checkIllegalColumn() {
+		String currentAttrNameText;
+		String currentTypeText;
+		setTextFieldsColor( defaultTextFieldsColor );
+		for( int i = 0; i < attrNumber; i++ ) {
+			currentAttrNameText = attrNameTextFields.get(i).getText();
+			currentTypeText = typeTextFields.get(i).getText();
+			if( StringUtils.isBlank( currentAttrNameText ) ) {
+				attrNameTextFields.get(i).requestFocus();
+				attrNameTextFields.get(i).setBackground( errorTextFieldsColor );
+				JOptionPane.showMessageDialog(
+						mainPanel, "Attribute name cannot be blank!", "Warning",
+						JOptionPane.WARNING_MESSAGE );
+				return false;
+			} else if( !StringUtils.isAsciiPrintable( currentAttrNameText ) ) {
+				attrNameTextFields.get(i).requestFocus();
+				attrNameTextFields.get(i).setBackground( errorTextFieldsColor );
+				JOptionPane.showMessageDialog(
+						mainPanel, "Attribute name containing illegal charater!", "Warning",
+						JOptionPane.WARNING_MESSAGE );
+				return false;
+			} else if( StringUtils.isBlank( currentTypeText ) ) {
+				typeTextFields.get(i).requestFocus();
+				typeTextFields.get(i).setBackground( errorTextFieldsColor );
+				JOptionPane.showMessageDialog(
+						mainPanel, "Attribute type cannot be blank!", "Warning",
+						JOptionPane.WARNING_MESSAGE );
+				return false;
+			} else if( !StringUtils.isAsciiPrintable( currentTypeText ) ) {
+				typeTextFields.get(i).requestFocus();
+				typeTextFields.get(i).setBackground( errorTextFieldsColor );
+				JOptionPane.showMessageDialog(
+						mainPanel, "Attribute type containing illegal charater!", "Warning",
+						JOptionPane.WARNING_MESSAGE );
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public void setTextFieldsColor( Color color ) {
+		for( int i = 0; i < attrNumber; i++ ) {
+			attrNameTextFields.get(i).setBackground( color );
+			typeTextFields.get(i).setBackground( color );
+			descriptionTextFields.get(i).setBackground( color );
+		}
 	}
 	
 	public ArrayList<Attribute> getAttributes() {
@@ -120,6 +163,10 @@ public class AttributesPanel extends JPanel {
 			attributes.add( attr );
 		}
 		return attributes;
+	}
+	
+	public JButton getAddButton() {
+		return addButton;
 	}
 	
 	private class RemoveButton extends JButton {
@@ -150,6 +197,7 @@ public class AttributesPanel extends JPanel {
 			attributesPanel = attributesPanelRef;
 		}
 		
+		@Override
 		public void actionPerformed( ActionEvent event ) {
 			
 			JTextField newAttrNameTextField;
@@ -159,32 +207,32 @@ public class AttributesPanel extends JPanel {
 			
 			newAttrNameTextField = new JTextField();
 			newAttrNameTextField.setFont( unifiedFont );
-			newAttrNameTextField.setBounds( 0, 22*(attrNumber+1), 161, 22 );
+			newAttrNameTextField.setBounds( 0, 22*attrNumber, 161, 22 );
 			newAttrNameTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newAttrNameTextField );
 			
 			newTypeTextField = new JTextField();
 			newTypeTextField.setFont( unifiedFont );
-			newTypeTextField.setBounds( 161, 22*(attrNumber+1), 80, 22 );
+			newTypeTextField.setBounds( 161, 22*attrNumber, 80, 22 );
 			newTypeTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newTypeTextField );
 			
 			newDescriptionTextField = new JTextField();
 			newDescriptionTextField.setFont( unifiedFont );
-			newDescriptionTextField.setBounds( 241, 22*(attrNumber+1), 305, 22 );
+			newDescriptionTextField.setBounds( 241, 22*attrNumber, 305, 22 );
 			newDescriptionTextField.addFocusListener( focusChangeHandler );
 			attributesPanel.add( newDescriptionTextField );
 			
 			newRemoveButton = new RemoveButton( attrNumber );
 			newRemoveButton.setFont( unifiedFont );
 			newRemoveButton.setMargin( new Insets( 0, 0, 0, 0 ) );
-			newRemoveButton.setBounds( 546, 22*(attrNumber+1), 65, 22 );
-			newRemoveButton.addActionListener( 
-				new RemoveButtonHandler( attributesPanel ) );
+			newRemoveButton.setBounds( 546, 22*attrNumber, 65, 22 );
+			newRemoveButton.addActionListener( removeButtonHandler );
 			newRemoveButton.addFocusListener( focusChangeHandler );
+			newRemoveButton.addKeyListener( mnemonicKeyHandler );
 			attributesPanel.add( newRemoveButton );
 			
-			addButton.setBounds( 0, 22*(attrNumber+2), 50, 22 );
+			addButton.setBounds( 0, 22*(attrNumber+1), 50, 22 );
 			
 			attrNameTextFields.add( newAttrNameTextField );
 			typeTextFields.add( newTypeTextField );
@@ -195,9 +243,11 @@ public class AttributesPanel extends JPanel {
 				removeButtons.get(0).setEnabled( true );
 			}
 			attrNumber++;
-			panelHeight = (attrNumber + 2) * 22;
+			panelHeight = (attrNumber + 1) * 22;
 			setPreferredSize( new Dimension( panelWidth, panelHeight ) );
 			scrollRectToVisible( addButton.getBounds() );
+			
+			newAttrNameTextField.requestFocus();
 			
 			repaint();
 			revalidate();
@@ -212,6 +262,7 @@ public class AttributesPanel extends JPanel {
 			attributesPanel = attributesPanelRef;
 		}
 		
+		@Override
 		public void actionPerformed( ActionEvent event ) {
 			RemoveButton sourceButton = (RemoveButton)event.getSource();
 			int index = sourceButton.getIndex();
@@ -229,18 +280,18 @@ public class AttributesPanel extends JPanel {
 			removeButtons.remove(index);
 			
 			attrNumber--;
-			addButton.setBounds( 0, 22*(attrNumber+1), 50, 22 );
+			addButton.setBounds( 0, 22*attrNumber, 50, 22 );
 			for( int i = index; i < attrNumber; i++ ) {
-				attrNameTextFields.get(i).setBounds( 0, 22*(i+1), 161, 22 );
-				typeTextFields.get(i).setBounds( 161, 22*(i+1), 80, 22 );
-				descriptionTextFields.get(i).setBounds( 241, 22*(i+1), 305, 22 );
-				removeButtons.get(i).setBounds( 546, 22*(i+1), 65, 22 );
+				attrNameTextFields.get(i).setBounds( 0, 22*i, 161, 22 );
+				typeTextFields.get(i).setBounds( 161, 22*i, 80, 22 );
+				descriptionTextFields.get(i).setBounds( 241, 22*i, 305, 22 );
+				removeButtons.get(i).setBounds( 546, 22*i, 65, 22 );
 				removeButtons.get(i).setIndex( i );
 			}
 			if( attrNumber == 1 ) {
 				removeButtons.get(0).setEnabled( false );
 			}
-			panelHeight = (attrNumber + 2) * 22;
+			panelHeight = (attrNumber + 1) * 22;
 			setPreferredSize( new Dimension( panelWidth, panelHeight ) );
 			
 			repaint();
@@ -250,12 +301,35 @@ public class AttributesPanel extends JPanel {
 	
 	private class FocusChangeHandler implements FocusListener {
 		
+		@Override
 		public void focusGained( FocusEvent e ) {
 			scrollRectToVisible( ((JComponent)e.getSource()).getBounds() );
 		}
 		
-		public void focusLost( FocusEvent e ) {
-			
+		@Override
+		public void focusLost( FocusEvent e ) { }
+	}
+	
+	private class MnemonicKeyHandler implements KeyListener {
+		
+		@Override
+		public void keyPressed( KeyEvent e ) {
+			switch( e.getKeyCode() ) {
+			case KeyEvent.VK_A:
+				addButton.requestFocus();
+				addButton.doClick();
+				break;
+			case KeyEvent.VK_E:
+				mainPanel.getExportButton().requestFocus();
+				mainPanel.getExportButton().doClick();
+				break;
+			}
 		}
+		
+		@Override
+		public void keyReleased( KeyEvent e ) { }
+		
+		@Override
+		public void keyTyped( KeyEvent e ) { }
 	}
 }

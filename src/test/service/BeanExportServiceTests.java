@@ -24,7 +24,7 @@ public class BeanExportServiceTests extends TestCase {
         assertEquals( "", exportContent.get(3) );
         assertEquals( "    private String attrName;  // Attribute name", exportContent.get(4) );
         assertEquals( "    private String type;  // Type of this attribute", exportContent.get(5) );
-        assertEquals( "    private String description;  // Attribute descrption", exportContent.get(6) );
+        assertEquals( "    private String description;  // Attribute description", exportContent.get(6) );
         assertEquals( "", exportContent.get(7) );
         assertEquals( "    public void setAttrName( String attrName ) {", exportContent.get(8) );
         assertEquals( "        this.attrName = attrName;", exportContent.get(9) );
@@ -54,7 +54,7 @@ public class BeanExportServiceTests extends TestCase {
     }
     
     public void testGetExportContentWithNullDesc() {
-    	ArrayList<Attribute> attributesTestData = getAttributesTestData2();
+        ArrayList<Attribute> attributesTestData = getAttributesTestData2();
         Bean beanTestData = getBeanTestData1();
         
         ArrayList<String> exportContent = 
@@ -97,7 +97,7 @@ public class BeanExportServiceTests extends TestCase {
     }
     
     public void testGetExportContentWithNullPackage() {
-    	ArrayList<Attribute> attributesTestData = getAttributesTestData1();
+        ArrayList<Attribute> attributesTestData = getAttributesTestData1();
         Bean beanTestData = getBeanTestData2();
         
         ArrayList<String> exportContent = 
@@ -108,7 +108,7 @@ public class BeanExportServiceTests extends TestCase {
         assertEquals( "", exportContent.get(1) );
         assertEquals( "    private String attrName;  // Attribute name", exportContent.get(2) );
         assertEquals( "    private String type;  // Type of this attribute", exportContent.get(3) );
-        assertEquals( "    private String description;  // Attribute descrption", exportContent.get(4) );
+        assertEquals( "    private String description;  // Attribute description", exportContent.get(4) );
         assertEquals( "", exportContent.get(5) );
         assertEquals( "    public void setAttrName( String attrName ) {", exportContent.get(6) );
         assertEquals( "        this.attrName = attrName;", exportContent.get(7) );
@@ -152,7 +152,7 @@ public class BeanExportServiceTests extends TestCase {
         
         testData.add( new Attribute() );
         testData.get(2).setAttrName( "description" );
-        testData.get(2).setDescription( "Attribute descrption" );
+        testData.get(2).setDescription( "Attribute description" );
         testData.get(2).setType( "String" );
         
         return testData;
