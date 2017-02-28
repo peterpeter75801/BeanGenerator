@@ -217,8 +217,8 @@ public class IntegratingTests extends TestCase {
     }
     
     public void testTypeCorrection() {
-    	ArrayList<String> actualExportedContents = new ArrayList<String>();
-    	Color errorTextFieldsColor = new Color( 255, 187, 187 );
+        ArrayList<String> actualExportedContents = new ArrayList<String>();
+        Color errorTextFieldsColor = new Color( 255, 187, 187 );
         MainFrame mainFrame = new MainFrame();
         mainFrame.setVisible( true );
         try {

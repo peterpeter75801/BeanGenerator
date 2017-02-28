@@ -2,7 +2,7 @@ package main;
 
 public class BeanGenerator {
 
-	public static void main( String args[] ) {
-		new view.MainFrame().setVisible( true );
-	}
+    public static void main( String args[] ) {
+        new view.MainFrame().setVisible( true );
+    }
 }
